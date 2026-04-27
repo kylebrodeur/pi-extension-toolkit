@@ -1,0 +1,35 @@
+{
+	"name": "pi-extension-toolkit",
+	"version": "0.1.0",
+	"description": "A Pi Coding Agent extension to create, retrofit, and verify other extensions.",
+	"author": "Kyle Brodeur",
+	"license": "MIT",
+	"keywords": ["pi-package", "pi-extension", "scaffold", "toolkit"],
+	"type": "module",
+	"main": "./dist/index.js",
+	"exports": {
+		".": {
+			"import": "./dist/index.js",
+			"require": "./dist/index.js",
+			"types": "./dist/index.d.ts"
+		}
+	},
+	"files": ["dist", "README.md", "template"],
+	"pi": {
+		"extensions": ["./dist"]
+	},
+	"scripts": {
+		"prepare": "husky",
+		"check": "biome check --write . && tsc --noEmit",
+		"build": "tsc",
+		"dev": "tsc --watch"
+	},
+	"devDependencies": {
+		"@biomejs/biome": "^1.9.0",
+		"@mariozechner/pi-coding-agent": "^0.70.2",
+		"typebox": "^1.1.0",
+		"@types/node": "^22.0.0",
+		"husky": "^9.0.0",
+		"typescript": "^5.7.0"
+	}
+}
