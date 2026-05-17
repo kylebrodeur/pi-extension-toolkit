@@ -34,8 +34,8 @@ export async function verifyStandards(targetDir: string): Promise<string> {
 		log("❌ typebox should be in devDependencies, not dependencies");
 	if (!devDeps.typebox)
 		log("❌ Missing 'typebox' in devDependencies (must be ^1.x for Pi >=0.70.2)");
-	if (!devDeps["@mariozechner/pi-coding-agent"])
-		log("❌ Missing '@mariozechner/pi-coding-agent' in devDependencies");
+	if (!devDeps["@earendil-works/pi-coding-agent"])
+		log("❌ Missing '@earendil-works/pi-coding-agent' in devDependencies");
 
 	// 2. biome.json
 	const biomePath = path.join(absoluteTarget, "biome.json");

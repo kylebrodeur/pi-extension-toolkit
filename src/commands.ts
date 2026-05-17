@@ -1,12 +1,10 @@
 import * as path from "node:path";
-import { fileURLToPath } from "node:url";
-import type { ExtensionAPI, ExtensionCommandContext } from "@mariozechner/pi-coding-agent";
+import type { ExtensionAPI, ExtensionCommandContext } from "@earendil-works/pi-coding-agent";
 import { createExtension } from "./core.js";
 import { retrofitExtension } from "./retrofit.js";
 import { verifyStandards } from "./verify.js";
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const TEMPLATE_DIR = path.resolve(__dirname, "..", "template");
+const TEMPLATE_DIR = path.resolve(import.meta.dirname, "..", "template");
 
 export function registerCommands(api: ExtensionAPI) {
 	api.registerCommand("create-extension", {

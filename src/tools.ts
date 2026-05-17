@@ -1,13 +1,11 @@
 import * as path from "node:path";
-import { fileURLToPath } from "node:url";
-import type { ExtensionAPI } from "@mariozechner/pi-coding-agent";
+import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
 import { Type } from "typebox";
 import { createExtension } from "./core.js";
 import { retrofitExtension } from "./retrofit.js";
 import { verifyStandards } from "./verify.js";
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const TEMPLATE_DIR = path.resolve(__dirname, "..", "template");
+const TEMPLATE_DIR = path.resolve(import.meta.dirname, "..", "template");
 
 export function registerTools(api: ExtensionAPI) {
 	api.registerTool({
@@ -20,9 +18,9 @@ export function registerTools(api: ExtensionAPI) {
 		execute: async ({ name, targetDir }: { name: string; targetDir: string }) => {
 			try {
 				const result = await createExtension(name, targetDir, TEMPLATE_DIR);
-				return { output: result };
+				return { content: [{ type: "text", text: result }] };
 			} catch (e) {
-				return { output: `Failed to create extension: ${(e as Error).message}`, isError: true };
+				return { content: [{ type: "text", text: `Failed to create extension: ${(e as Error).message}` }], isError: true };
 			}
 		},
 		// biome-ignore lint/suspicious/noExplicitAny: Required for TypeBox 1.x deep inference bypass
@@ -38,9 +36,9 @@ export function registerTools(api: ExtensionAPI) {
 		execute: async ({ targetDir }: { targetDir: string }) => {
 			try {
 				const result = await retrofitExtension(targetDir);
-				return { output: result };
+				return { content: [{ type: "text", text: result }] };
 			} catch (e) {
-				return { output: `Failed to retrofit: ${(e as Error).message}`, isError: true };
+				return { content: [{ type: "text", text: `Failed to retrofit: ${(e as Error).message}` }], isError: true };
 			}
 		},
 		// biome-ignore lint/suspicious/noExplicitAny: Required for TypeBox 1.x deep inference bypass
@@ -56,9 +54,9 @@ export function registerTools(api: ExtensionAPI) {
 		execute: async ({ targetDir }: { targetDir: string }) => {
 			try {
 				const result = await verifyStandards(targetDir);
-				return { output: result };
+				return { content: [{ type: "text", text: result }] };
 			} catch (e) {
-				return { output: `Failed to verify: ${(e as Error).message}`, isError: true };
+				return { content: [{ type: "text", text: `Failed to verify: ${(e as Error).message}` }], isError: true };
 			}
 		},
 		// biome-ignore lint/suspicious/noExplicitAny: Required for TypeBox 1.x deep inference bypass

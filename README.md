@@ -33,7 +33,7 @@ Your agent can autonomously call:
 
 - **Runtime**: Node 22 LTS
 - **Package**: `type` module, ESM exports, `pi-package` keyword, `pi.extensions` manifest.
-- **Dependencies**: `@mariozechner/pi-coding-agent` (latest), `typebox` (^1.1.0) in `devDependencies`.
+- **Dependencies**: `@earendil-works/pi-coding-agent` (latest), `typebox` (^1.1.0) in `devDependencies`.
 - **Quality**: Biome (latest schema), Husky v9 pre-commit hooks (`biome check --write` & `tsc --noEmit`).
 - **CI/CD**: GitHub Actions using `node-version: "22"` and `--provenance` publishing.
 

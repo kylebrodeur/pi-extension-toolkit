@@ -65,12 +65,12 @@ export async function retrofitExtension(targetDir: string): Promise<string> {
 		log("Moved typebox to devDependencies and upgraded to ^1.1.0");
 	}
 
-	// Add @mariozechner/pi-coding-agent if missing
-	if (!pkg.devDependencies?.["@mariozechner/pi-coding-agent"]) {
+	// Add @earendil-works/pi-coding-agent if missing
+	if (!pkg.devDependencies?.["@earendil-works/pi-coding-agent"]) {
 		pkg.devDependencies = pkg.devDependencies || {};
-		pkg.devDependencies["@mariozechner/pi-coding-agent"] = "^0.70.2";
+		pkg.devDependencies["@earendil-works/pi-coding-agent"] = "^0.75.0";
 		pkgChanged = true;
-		log("Added @mariozechner/pi-coding-agent to devDependencies");
+		log("Added @earendil-works/pi-coding-agent to devDependencies");
 	}
 
 	// Husky prepare script
