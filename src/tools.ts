@@ -15,7 +15,7 @@ export function registerTools(api: ExtensionAPI) {
 			name: Type.String({ description: "The name of the new package (e.g. pi-my-tool)" }),
 			targetDir: Type.String({ description: "Directory to scaffold the extension in" }),
 		}),
-		execute: async ({ name, targetDir }: { name: string; targetDir: string }) => {
+		execute: async (toolCallId: string, { name, targetDir }: { name: string; targetDir: string }) => {
 			try {
 				const result = await createExtension(name, targetDir, TEMPLATE_DIR);
 				return { content: [{ type: "text", text: result }] };
@@ -33,7 +33,7 @@ export function registerTools(api: ExtensionAPI) {
 		parameters: Type.Object({
 			targetDir: Type.String({ description: "Directory of the extension to retrofit" }),
 		}),
-		execute: async ({ targetDir }: { targetDir: string }) => {
+		execute: async (toolCallId: string, { targetDir }: { targetDir: string }) => {
 			try {
 				const result = await retrofitExtension(targetDir);
 				return { content: [{ type: "text", text: result }] };
@@ -51,7 +51,7 @@ export function registerTools(api: ExtensionAPI) {
 		parameters: Type.Object({
 			targetDir: Type.String({ description: "Directory of the extension to verify" }),
 		}),
-		execute: async ({ targetDir }: { targetDir: string }) => {
+		execute: async (toolCallId: string, { targetDir }: { targetDir: string }) => {
 			try {
 				const result = await verifyStandards(targetDir);
 				return { content: [{ type: "text", text: result }] };
