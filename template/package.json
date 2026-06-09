@@ -2,7 +2,19 @@
 	"name": "pi-extension-template",
 	"version": "0.2.0",
 	"description": "A Pi Coding Agent extension",
-	"keywords": ["pi-package"],
+	"license": "MIT",
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/kylebrodeur/pi-tools.git"
+	},
+	"bugs": {
+		"url": "https://github.com/kylebrodeur/pi-tools/issues"
+	},
+	"homepage": "https://github.com/kylebrodeur/pi-tools#readme",
+	"engines": {
+		"node": ">=22.0.0"
+	},
+	"keywords": ["pi-package", "pi-extension"],
 	"type": "module",
 	"main": "./dist/index.js",
 	"exports": {
@@ -12,7 +24,7 @@
 			"types": "./dist/index.d.ts"
 		}
 	},
-	"files": ["dist", "README.md"],
+	"files": ["dist", "README.md", "CHANGELOG.md"],
 	"pi": {
 		"extensions": ["./dist"]
 	},
@@ -22,9 +34,12 @@
 		"build": "tsc",
 		"dev": "tsc --watch"
 	},
+	"peerDependencies": {
+		"@earendil-works/pi-coding-agent": ">=0.78.1 <1.0.0"
+	},
 	"devDependencies": {
 		"@biomejs/biome": "^1.9.0",
-		"@earendil-works/pi-coding-agent": "^0.78.1",
+		"@earendil-works/pi-coding-agent": "^0.79.0",
 		"typebox": "^1.1.0",
 		"@types/node": "^22.0.0",
 		"husky": "^9.0.0",

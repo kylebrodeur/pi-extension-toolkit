@@ -1,9 +1,20 @@
 {
   "name": "pi-extension-toolkit",
-  "version": "0.2.2",
+  "version": "0.2.4",
   "description": "A Pi Coding Agent extension to create, retrofit, and verify other extensions.",
   "author": "Kyle Brodeur",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kylebrodeur/pi-tools.git"
+  },
+  "bugs": {
+    "url": "https://github.com/kylebrodeur/pi-tools/issues"
+  },
+  "homepage": "https://github.com/kylebrodeur/pi-tools/tree/main/extensions/pi-extension-toolkit#readme",
+  "engines": {
+    "node": ">=22.0.0"
+  },
   "keywords": [
     "pi-package",
     "pi-extension",
@@ -22,6 +33,7 @@
   "files": [
     "dist",
     "README.md",
+    "CHANGELOG.md",
     "template"
   ],
   "pi": {
@@ -35,9 +47,12 @@
     "build": "tsc",
     "dev": "tsc --watch"
   },
+  "peerDependencies": {
+    "@earendil-works/pi-coding-agent": ">=0.78.1 <1.0.0"
+  },
   "devDependencies": {
     "@biomejs/biome": "^1.9.0",
-    "@earendil-works/pi-coding-agent": "^0.78.1",
+    "@earendil-works/pi-coding-agent": "^0.79.0",
     "typebox": "^1.1.0",
     "@types/node": "^22.0.0",
     "husky": "^9.0.0",

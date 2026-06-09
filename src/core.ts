@@ -1,15 +1,77 @@
-import { execFile } from "node:child_process";
+import { spawn } from "node:child_process";
 import * as fs from "node:fs/promises";
 import * as path from "node:path";
-import { promisify } from "node:util";
 
-const execFileAsync = promisify(execFile);
+/**
+ * Execute a command with AbortSignal support. Kills the process on abort.
+ */
+function execWithSignal(
+	command: string,
+	args: string[],
+	options: { cwd?: string; signal?: AbortSignal },
+): Promise<{ stdout: string; stderr: string; code: number | null; killed: boolean }> {
+	return new Promise((resolve, reject) => {
+		const child = spawn(command, args, {
+			cwd: options.cwd,
+			stdio: "pipe",
+		});
+
+		let stdout = "";
+		let stderr = "";
+		let killed = false;
+
+		child.stdout?.on("data", (data: Buffer) => {
+			stdout += data.toString();
+		});
+		child.stderr?.on("data", (data: Buffer) => {
+			stderr += data.toString();
+		});
+
+		child.on("error", (err) => {
+			if (killed) return;
+			reject(err);
+		});
+
+		child.on("close", (code) => {
+			resolve({ stdout, stderr, code, killed });
+		});
+
+		if (options.signal) {
+			const onAbort = () => {
+				killed = true;
+				child.kill("SIGTERM");
+				if (!child.killed) {
+					setTimeout(() => {
+						if (!child.killed) child.kill("SIGKILL");
+					}, 1000);
+				}
+			};
+			if (options.signal.aborted) {
+				onAbort();
+			} else {
+				options.signal.addEventListener("abort", onAbort, { once: true });
+			}
+		}
+	});
+}
+
+export interface CreateExtensionOptions {
+	/** AbortSignal for cancellation */
+	signal?: AbortSignal;
+	/** Progress callback for streaming status updates */
+	onUpdate?: (msg: string) => void;
+}
 
 export async function createExtension(
 	name: string,
 	targetDir: string,
-	templateDir: string
+	templateDir: string,
+	options: CreateExtensionOptions = {},
 ): Promise<string> {
+	const { signal, onUpdate } = options;
+
+	if (signal?.aborted) throw new Error("Operation cancelled");
+
 	const absoluteTarget = path.resolve(targetDir);
 	const absoluteTemplate = path.resolve(templateDir);
 
@@ -29,9 +91,11 @@ export async function createExtension(
 
 	// Helper to copy directory recursively
 	async function copyDir(src: string, dest: string) {
+		if (signal?.aborted) throw new Error("Operation cancelled");
 		await fs.mkdir(dest, { recursive: true });
 		const entries = await fs.readdir(src, { withFileTypes: true });
 		for (const entry of entries) {
+			if (signal?.aborted) throw new Error("Operation cancelled");
 			if (entry.name === "node_modules" || entry.name === "dist" || entry.name === ".git") continue;
 
 			const srcPath = path.join(src, entry.name);
@@ -44,6 +108,7 @@ export async function createExtension(
 		}
 	}
 
+	onUpdate?.("Copying template files...");
 	await copyDir(absoluteTemplate, absoluteTarget);
 
 	// Update package.json
@@ -55,11 +120,17 @@ export async function createExtension(
 	await fs.writeFile(packageJsonPath, `${JSON.stringify(packageJson, null, 2)}\n`);
 
 	// Initialize git and run install
-	try {
-		await execFileAsync("git", ["init"], { cwd: absoluteTarget });
-		await execFileAsync("npm", ["install"], { cwd: absoluteTarget });
-	} catch (e) {
-		return `Extension files created, but post-creation scripts failed: ${(e as Error).message}`;
+	onUpdate?.("Initializing git repository...");
+	const gitResult = await execWithSignal("git", ["init"], { cwd: absoluteTarget, signal });
+	if (gitResult.code !== 0) {
+		return `Extension files created, but git init failed: ${gitResult.stderr}`;
+	}
+
+	onUpdate?.("Installing npm dependencies...");
+	const npmResult = await execWithSignal("npm", ["install"], { cwd: absoluteTarget, signal });
+	if (npmResult.killed) throw new Error("Operation cancelled");
+	if (npmResult.code !== 0) {
+		return `Extension files created, but npm install failed: ${npmResult.stderr}`;
 	}
 
 	return `Successfully created extension ${name} in ${absoluteTarget}`;

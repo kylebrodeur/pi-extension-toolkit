@@ -19,6 +19,8 @@ export async function verifyStandards(targetDir: string): Promise<string> {
 	if (!pkg.exports) log("❌ Missing 'exports' in package.json");
 	if (!Array.isArray(pkg.files) || !pkg.files.includes("dist"))
 		log("❌ Missing 'dist' in 'files' array in package.json");
+	if (Array.isArray(pkg.files) && !pkg.files.includes("CHANGELOG.md"))
+		log("⚠️ Missing 'CHANGELOG.md' in 'files' array")
 	if (!Array.isArray(pkg.keywords) || !pkg.keywords.includes("pi-package"))
 		log("❌ Missing 'pi-package' in 'keywords' array");
 	if (!(pkg.pi as Record<string, string[]>)?.extensions?.includes("./dist"))
@@ -36,6 +38,18 @@ export async function verifyStandards(targetDir: string): Promise<string> {
 		log("❌ Missing 'typebox' in devDependencies (must be ^1.x for Pi >=0.70.2)");
 	if (!devDeps["@earendil-works/pi-coding-agent"])
 		log("❌ Missing '@earendil-works/pi-coding-agent' in devDependencies");
+
+	// Template metadata fields
+	if (!pkg.license) log("⚠️ Missing 'license' in package.json (recommended: MIT)");
+	const engines = pkg.engines as Record<string, string> | undefined;
+	if (!engines?.node) log("⚠️ Missing 'engines.node' in package.json (recommended: >=22.0.0)");
+	if (!pkg.repository) log("⚠️ Missing 'repository' in package.json");
+	if (!pkg.bugs) log("⚠️ Missing 'bugs' in package.json");
+	if (!pkg.homepage) log("⚠️ Missing 'homepage' in package.json");
+
+	const peerDeps = (pkg.peerDependencies as Record<string, string>) || {};
+	if (!peerDeps["@earendil-works/pi-coding-agent"])
+		log("⚠️ Missing '@earendil-works/pi-coding-agent' in peerDependencies");
 
 	// 2. biome.json
 	const biomePath = path.join(absoluteTarget, "biome.json");
