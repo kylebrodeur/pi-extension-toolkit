@@ -2,6 +2,7 @@ import { spawn } from "node:child_process";
 import { existsSync, readFileSync } from "node:fs";
 import * as fsp from "node:fs/promises";
 import * as path from "node:path";
+import type { FileChange, ToolkitOptions, ToolkitResult } from "./lib/types.js";
 import {
 	applyChanges,
 	buildManifest,
@@ -11,7 +12,6 @@ import {
 	saveManifest,
 	walkDir,
 } from "./lib/updater.js";
-import type { FileChange, ToolkitOptions, ToolkitResult } from "./lib/types.js";
 
 /**
  * Execute a command with AbortSignal support. Kills the process on abort.
@@ -19,7 +19,7 @@ import type { FileChange, ToolkitOptions, ToolkitResult } from "./lib/types.js";
 function execWithSignal(
 	command: string,
 	args: string[],
-	options: { cwd?: string; signal?: AbortSignal },
+	options: { cwd?: string; signal?: AbortSignal }
 ): Promise<{ stdout: string; stderr: string; code: number | null; killed: boolean }> {
 	return new Promise((resolve, reject) => {
 		const child = spawn(command, args, {
@@ -69,7 +69,7 @@ function execWithSignal(
 function getPackageVersion(): string {
 	try {
 		const pkg = JSON.parse(
-			readFileSync(path.resolve(import.meta.dirname, "..", "package.json"), "utf-8"),
+			readFileSync(path.resolve(import.meta.dirname, "..", "package.json"), "utf-8")
 		);
 		return pkg.version;
 	} catch {
@@ -118,18 +118,9 @@ function hasValue(obj: unknown, path: string): boolean {
  * Uses safe update logic: if the target already has a toolkit manifest,
  * only applies patches that haven't been user-modified.
  */
-export async function retrofitExtension(
-	options: RetrofitExtensionOptions,
-): Promise<ToolkitResult> {
+export async function retrofitExtension(options: RetrofitExtensionOptions): Promise<ToolkitResult> {
 	const startTime = Date.now();
-	const {
-		targetDir,
-		signal,
-		onUpdate,
-		force = false,
-		backup = true,
-		dryRun = false,
-	} = options;
+	const { targetDir, signal, onUpdate, force = false, backup = true, dryRun = false } = options;
 
 	if (signal?.aborted) throw new Error("Operation cancelled");
 
@@ -242,7 +233,7 @@ export async function retrofitExtension(
 	// tsconfig.json patches
 	const tsconfigPath = path.join(absoluteTarget, "tsconfig.json");
 	try {
-		let tsconfigStr = await fsp.readFile(tsconfigPath, "utf-8");
+		const tsconfigStr = await fsp.readFile(tsconfigPath, "utf-8");
 		if (/"module"\s*:\s*"CommonJS"/.test(tsconfigStr)) {
 			patches.push({
 				relativePath: "tsconfig.json",
@@ -278,7 +269,9 @@ export async function retrofitExtension(
 	}
 
 	// For safe update, compute what can be applied
-	const applicablePatches = patches.filter((p) => p.runOn === "always" || p.runOn === (isUpdate ? "update-only" : "fresh-only"));
+	const applicablePatches = patches.filter(
+		(p) => p.runOn === "always" || p.runOn === (isUpdate ? "update-only" : "fresh-only")
+	);
 
 	// Build changes from patches
 	const changes: FileChange[] = [];
@@ -365,7 +358,11 @@ export async function retrofitExtension(
 			// Apply all package.json patches
 			if (!pkg.exports) {
 				pkg.exports = {
-					".": { import: "./dist/index.js", require: "./dist/index.js", types: "./dist/index.d.ts" },
+					".": {
+						import: "./dist/index.js",
+						require: "./dist/index.js",
+						types: "./dist/index.d.ts",
+					},
 				};
 			}
 			if (!pkg.files) pkg.files = ["dist", "README.md"];
@@ -374,8 +371,9 @@ export async function retrofitExtension(
 			if (!pkg.pi) pkg.pi = { extensions: ["./dist"] };
 			else if (!pkg.pi.extensions) pkg.pi.extensions = ["./dist"];
 			if (pkg.type !== "module") pkg.type = "module";
-			if (pkg.dependencies?.["@sinclair/typebox"]) delete pkg.dependencies["@sinclair/typebox"];
-			if (pkg.dependencies?.typebox) delete pkg.dependencies.typebox;
+			if (pkg.dependencies?.["@sinclair/typebox"])
+				pkg.dependencies["@sinclair/typebox"] = undefined;
+			if (pkg.dependencies?.typebox) pkg.dependencies.typebox = undefined;
 			if (!pkg.devDependencies) pkg.devDependencies = {};
 			pkg.devDependencies.typebox = "^1.1.0";
 			if (!pkg.devDependencies["@earendil-works/pi-coding-agent"]) {
@@ -399,7 +397,7 @@ export async function retrofitExtension(
 			let content = await fsp.readFile(targetPath, "utf-8");
 			for (const p of applicablePatches) {
 				if (p.relativePath === "tsconfig.json" && p.type === "regex-replace" && p.pattern) {
-					content = content.replace(p.pattern, p.replacement!);
+					content = content.replace(p.pattern, p.replacement ?? "");
 				}
 			}
 			await fsp.writeFile(targetPath, content);
@@ -408,19 +406,23 @@ export async function retrofitExtension(
 			try {
 				onUpdate?.("Installing Husky v9...");
 				const installResult = await execWithSignal(
-					"npm", ["install", "--save-dev", "husky@^9.0.0"],
-					{ cwd: absoluteTarget, signal },
+					"npm",
+					["install", "--save-dev", "husky@^9.0.0"],
+					{ cwd: absoluteTarget, signal }
 				);
 				if (installResult.killed) throw new Error("Operation cancelled");
 
-				const initResult = await execWithSignal(
-					"npx", ["husky", "init"],
-					{ cwd: absoluteTarget, signal },
-				);
+				const initResult = await execWithSignal("npx", ["husky", "init"], {
+					cwd: absoluteTarget,
+					signal,
+				});
 				if (initResult.killed) throw new Error("Operation cancelled");
 
 				const precommitPath = path.join(absoluteTarget, ".husky", "pre-commit");
-				await fsp.writeFile(precommitPath, "npx biome check --write .\ngit add -A\nnpx tsc --noEmit\n");
+				await fsp.writeFile(
+					precommitPath,
+					"npx biome check --write .\ngit add -A\nnpx tsc --noEmit\n"
+				);
 				created.push(".husky/pre-commit");
 			} catch (e) {
 				skipped.push(`.husky/pre-commit (failed: ${(e as Error).message})`);
@@ -432,7 +434,10 @@ export async function retrofitExtension(
 	const trackedFiles = new Map<string, string>();
 	if (existsSync(pkgPath)) trackedFiles.set("package.json", hashFile(pkgPath));
 	if (existsSync(biomePath)) trackedFiles.set("biome.json", hashFile(biomePath));
-	const tsconfigExists = await fsp.access(tsconfigPath).then(() => true).catch(() => false);
+	const tsconfigExists = await fsp
+		.access(tsconfigPath)
+		.then(() => true)
+		.catch(() => false);
 	if (tsconfigExists) trackedFiles.set("tsconfig.json", hashFile(tsconfigPath));
 
 	const manifest = buildManifest(trackedFiles, version, "retrofit");

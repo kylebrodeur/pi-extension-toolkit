@@ -1,9 +1,9 @@
 import * as path from "node:path";
 import type { ExtensionAPI, ExtensionCommandContext } from "@earendil-works/pi-coding-agent";
 import { createExtension } from "./core.js";
+import type { ToolkitResult } from "./lib/types.js";
 import { retrofitExtension } from "./retrofit.js";
 import { verifyStandards } from "./verify.js";
-import type { ToolkitResult } from "./lib/types.js";
 
 const TEMPLATE_DIR = path.resolve(import.meta.dirname, "..", "template");
 

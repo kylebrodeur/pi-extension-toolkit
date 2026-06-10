@@ -20,7 +20,7 @@ export async function verifyStandards(targetDir: string): Promise<string> {
 	if (!Array.isArray(pkg.files) || !pkg.files.includes("dist"))
 		log("❌ Missing 'dist' in 'files' array in package.json");
 	if (Array.isArray(pkg.files) && !pkg.files.includes("CHANGELOG.md"))
-		log("⚠️ Missing 'CHANGELOG.md' in 'files' array")
+		log("⚠️ Missing 'CHANGELOG.md' in 'files' array");
 	if (!Array.isArray(pkg.keywords) || !pkg.keywords.includes("pi-package"))
 		log("❌ Missing 'pi-package' in 'keywords' array");
 	if (!(pkg.pi as Record<string, string[]>)?.extensions?.includes("./dist"))

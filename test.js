@@ -2,9 +2,9 @@ import * as fs from "node:fs/promises";
 import * as path from "node:path";
 import { fileURLToPath } from "node:url";
 import { createExtension } from "./dist/core.js";
+import { getInstalledVersion, isToolkitInstalled } from "./dist/lib/updater.js";
 import { retrofitExtension } from "./dist/retrofit.js";
 import { verifyStandards } from "./dist/verify.js";
-import { isToolkitInstalled, getInstalledVersion } from "./dist/lib/updater.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const TEMPLATE_DIR = path.resolve(__dirname, "template");
@@ -40,7 +40,9 @@ async function run() {
 		force: false,
 		backup: true,
 	});
-	console.log(`Updated: ${retrofit1.filesUpdated.length}, Created: ${retrofit1.filesCreated.length}`);
+	console.log(
+		`Updated: ${retrofit1.filesUpdated.length}, Created: ${retrofit1.filesCreated.length}`
+	);
 
 	console.log("\n--- Testing dry-run create (should detect existing, show safe update) ---");
 	const dryRun = await createExtension(TEMPLATE_DIR, {
@@ -48,7 +50,9 @@ async function run() {
 		targetDir: TARGET_DIR,
 		dryRun: true,
 	});
-	console.log(`Dry-run: ${dryRun.filesSkipped.length} skipped, ${dryRun.filesCreated.length} created`);
+	console.log(
+		`Dry-run: ${dryRun.filesSkipped.length} skipped, ${dryRun.filesCreated.length} created`
+	);
 
 	console.log("\n--- Sabotaging extension ---");
 	const pkgPath = path.join(TARGET_DIR, "package.json");
@@ -76,7 +80,9 @@ async function run() {
 		force: false,
 		backup: true,
 	});
-	console.log(`Updated: ${retrofit2.filesUpdated.length}, Created: ${retrofit2.filesCreated.length}`);
+	console.log(
+		`Updated: ${retrofit2.filesUpdated.length}, Created: ${retrofit2.filesCreated.length}`
+	);
 
 	console.log("\n--- Testing verifyStandards (Recovered) ---");
 	const verify3 = await verifyStandards(TARGET_DIR);

@@ -2,9 +2,9 @@ import * as path from "node:path";
 import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
 import { Type } from "typebox";
 import { createExtension } from "./core.js";
+import type { DryRunResult, ToolkitResult } from "./lib/types.js";
 import { retrofitExtension } from "./retrofit.js";
 import { verifyStandards } from "./verify.js";
-import type { DryRunResult, ToolkitResult } from "./lib/types.js";
 
 const TEMPLATE_DIR = path.resolve(import.meta.dirname, "..", "template");
 
@@ -55,9 +55,11 @@ function formatCreateResult(result: ToolkitResult): string {
 
 function formatRetrofitResult(result: ToolkitResult): string {
 	const lines: string[] = [];
-	lines.push(result.filesUpdated.length > 0 || result.filesCreated.length > 0
-		? "# Retrofit Complete"
-		: "# No Changes Needed");
+	lines.push(
+		result.filesUpdated.length > 0 || result.filesCreated.length > 0
+			? "# Retrofit Complete"
+			: "# No Changes Needed"
+	);
 
 	if (result.filesCreated.length > 0) {
 		lines.push("");
@@ -90,7 +92,14 @@ function formatDryRun(dryRun: DryRunResult): string {
 		"## Changes that would be applied",
 	];
 	for (const change of dryRun.changes) {
-		const icon = change.action === "created" ? "+" : change.action === "updated" ? "~" : change.action === "skipped" ? "⊙" : "⚠";
+		const icon =
+			change.action === "created"
+				? "+"
+				: change.action === "updated"
+					? "~"
+					: change.action === "skipped"
+						? "⊙"
+						: "⚠";
 		lines.push(`  ${icon} ${change.relativePath} (${change.reason})`);
 	}
 	lines.push("");
@@ -102,7 +111,8 @@ export function registerTools(api: ExtensionAPI) {
 	api.registerTool({
 		name: "create_extension",
 		label: "Create Extension",
-		description: "Scaffold a new Pi extension using the pi-extension-template, or safely update an existing one. When re-run on an existing project, detects and preserves user modifications via manifest tracking.",
+		description:
+			"Scaffold a new Pi extension using the pi-extension-template, or safely update an existing one. When re-run on an existing project, detects and preserves user modifications via manifest tracking.",
 		promptSnippet: "Scaffold or safely update a Pi extension from the standard template",
 		promptGuidelines: [
 			"Use create_extension when the user asks to create, scaffold, or bootstrap a new Pi extension or Pi Coding Agent extension.",
@@ -111,14 +121,26 @@ export function registerTools(api: ExtensionAPI) {
 		parameters: Type.Object({
 			name: Type.String({ description: "The name of the new package (e.g. pi-my-tool)" }),
 			targetDir: Type.String({ description: "Directory to scaffold the extension in" }),
-			dryRun: Type.Optional(Type.Boolean({ description: "Preview changes without executing. Default: false" })),
-			force: Type.Optional(Type.Boolean({ description: "Overwrite user modifications. Default: false" })),
+			dryRun: Type.Optional(
+				Type.Boolean({ description: "Preview changes without executing. Default: false" })
+			),
+			force: Type.Optional(
+				Type.Boolean({ description: "Overwrite user modifications. Default: false" })
+			),
 		}),
 		async execute(
 			toolCallId: string,
-			{ name, targetDir, dryRun, force }: { name: string; targetDir: string; dryRun?: boolean; force?: boolean },
+			{
+				name,
+				targetDir,
+				dryRun,
+				force,
+			}: { name: string; targetDir: string; dryRun?: boolean; force?: boolean },
 			signal?: AbortSignal,
-			onUpdate?: (update: { content: Array<{ type: "text"; text: string }>; details?: unknown }) => void,
+			onUpdate?: (update: {
+				content: Array<{ type: "text"; text: string }>;
+				details?: unknown;
+			}) => void
 		) {
 			const result = await createExtension(TEMPLATE_DIR, {
 				name,
@@ -135,7 +157,9 @@ export function registerTools(api: ExtensionAPI) {
 				try {
 					const dryRun = JSON.parse(result.conflicts[0]) as DryRunResult;
 					return { content: [{ type: "text", text: formatDryRun(dryRun) }], details: dryRun };
-				} catch { /* fall through */ }
+				} catch {
+					/* fall through */
+				}
 			}
 
 			return {
@@ -151,21 +175,29 @@ export function registerTools(api: ExtensionAPI) {
 		label: "Retrofit Extension",
 		description:
 			"Automate the 6-step checklist from RETROFIT.md (Biome, Husky, package.json updates). Uses manifest tracking for safe updates that preserve user modifications.",
-		promptSnippet: "Upgrade an existing Pi extension to current standards with safe update tracking",
+		promptSnippet:
+			"Upgrade an existing Pi extension to current standards with safe update tracking",
 		promptGuidelines: [
 			"Use retrofit_extension when the user asks to upgrade, fix, or modernize an existing Pi extension to meet current template standards.",
 			"Use retrofit_extension with dryRun:true to preview changes before applying.",
 		],
 		parameters: Type.Object({
 			targetDir: Type.String({ description: "Directory of the extension to retrofit" }),
-			dryRun: Type.Optional(Type.Boolean({ description: "Preview changes without executing. Default: false" })),
-			force: Type.Optional(Type.Boolean({ description: "Overwrite user modifications. Default: false" })),
+			dryRun: Type.Optional(
+				Type.Boolean({ description: "Preview changes without executing. Default: false" })
+			),
+			force: Type.Optional(
+				Type.Boolean({ description: "Overwrite user modifications. Default: false" })
+			),
 		}),
 		async execute(
 			toolCallId: string,
 			{ targetDir, dryRun, force }: { targetDir: string; dryRun?: boolean; force?: boolean },
 			signal?: AbortSignal,
-			onUpdate?: (update: { content: Array<{ type: "text"; text: string }>; details?: unknown }) => void,
+			onUpdate?: (update: {
+				content: Array<{ type: "text"; text: string }>;
+				details?: unknown;
+			}) => void
 		) {
 			const result = await retrofitExtension({
 				targetDir,
@@ -181,7 +213,9 @@ export function registerTools(api: ExtensionAPI) {
 				try {
 					const dryRun = JSON.parse(result.conflicts[0]) as DryRunResult;
 					return { content: [{ type: "text", text: formatDryRun(dryRun) }], details: dryRun };
-				} catch { /* fall through */ }
+				} catch {
+					/* fall through */
+				}
 			}
 
 			return {
@@ -204,10 +238,7 @@ export function registerTools(api: ExtensionAPI) {
 		parameters: Type.Object({
 			targetDir: Type.String({ description: "Directory of the extension to verify" }),
 		}),
-		execute: async (
-			toolCallId: string,
-			{ targetDir }: { targetDir: string },
-		) => {
+		execute: async (toolCallId: string, { targetDir }: { targetDir: string }) => {
 			const result = await verifyStandards(targetDir);
 			return { content: [{ type: "text", text: result }] };
 		},

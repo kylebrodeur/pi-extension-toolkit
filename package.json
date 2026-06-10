@@ -1,68 +1,56 @@
 {
-  "name": "pi-extension-toolkit",
-  "version": "0.3.0",
-  "description": "A Pi Coding Agent extension to create, retrofit, and verify other extensions.",
-  "author": "Kyle Brodeur",
-  "license": "MIT",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/kylebrodeur/pi-tools.git"
-  },
-  "bugs": {
-    "url": "https://github.com/kylebrodeur/pi-tools/issues"
-  },
-  "homepage": "https://github.com/kylebrodeur/pi-tools/tree/main/extensions/pi-extension-toolkit#readme",
-  "engines": {
-    "node": ">=22.0.0"
-  },
-  "keywords": [
-    "pi-package",
-    "pi-extension",
-    "scaffold",
-    "toolkit"
-  ],
-  "type": "module",
-  "main": "./dist/index.js",
-  "exports": {
-    ".": {
-      "import": "./dist/index.js",
-      "require": "./dist/index.js",
-      "types": "./dist/index.d.ts"
-    },
-    "./api": {
-      "import": "./dist/api.js",
-      "require": "./dist/api.js",
-      "types": "./dist/api.d.ts"
-    }
-  },
-  "files": [
-    "dist",
-    "README.md",
-    "CHANGELOG.md",
-    "template"
-  ],
-  "pi": {
-    "extensions": [
-      "./dist"
-    ]
-  },
-  "scripts": {
-    "prepare": "husky",
-    "check": "biome check --write . && tsc --noEmit",
-    "build": "tsc",
-    "dev": "tsc --watch",
-    "test": "node test.js",
-    "prepublishOnly": "npm run build && npm run check && node test.js"
-  },
-  "peerDependencies": {
-    "@earendil-works/pi-coding-agent": ">=0.78.1 <1.0.0"
-  },
-  "devDependencies": {
-    "@biomejs/biome": "^1.9.0",
-    "@earendil-works/pi-coding-agent": "^0.79.0",
-    "typebox": "^1.1.0",
-    "@types/node": "^22.0.0",
-    "husky": "^9.0.0",
-    "typescript": "^5.7.0"
-  }
+	"name": "pi-extension-toolkit",
+	"version": "0.3.0",
+	"description": "A Pi Coding Agent extension to create, retrofit, and verify other extensions.",
+	"author": "Kyle Brodeur",
+	"license": "MIT",
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/kylebrodeur/pi-tools.git"
+	},
+	"bugs": {
+		"url": "https://github.com/kylebrodeur/pi-tools/issues"
+	},
+	"homepage": "https://github.com/kylebrodeur/pi-tools/tree/main/extensions/pi-extension-toolkit#readme",
+	"engines": {
+		"node": ">=22.0.0"
+	},
+	"keywords": ["pi-package", "pi-extension", "scaffold", "toolkit"],
+	"type": "module",
+	"main": "./dist/index.js",
+	"exports": {
+		".": {
+			"import": "./dist/index.js",
+			"require": "./dist/index.js",
+			"types": "./dist/index.d.ts"
+		},
+		"./api": {
+			"import": "./dist/api.js",
+			"require": "./dist/api.js",
+			"types": "./dist/api.d.ts"
+		}
+	},
+	"files": ["dist", "README.md", "CHANGELOG.md", "template"],
+	"pi": {
+		"extensions": ["./dist"]
+	},
+	"scripts": {
+		"prepare": "husky",
+		"check": "biome check --write . && tsc --noEmit",
+		"build": "tsc",
+		"dev": "tsc --watch",
+		"test": "node test.js",
+		"prepublishOnly": "npm run build && npm run check && node test.js"
+	},
+	"peerDependencies": {
+		"@earendil-works/pi-coding-agent": ">=0.78.1 <1.0.0"
+	},
+	"devDependencies": {
+		"@biomejs/biome": "^1.9.0",
+		"@earendil-works/pi-coding-agent": "^0.79.0",
+		"typebox": "^1.1.0",
+		"@types/node": "^22.0.0",
+		"husky": "^9.0.0",
+		"typescript": "^5.7.0"
+	}
 }

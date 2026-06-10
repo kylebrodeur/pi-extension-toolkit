@@ -107,7 +107,7 @@ export function computeChanges(
 	targetDir: string,
 	sourceFiles: Map<string, string>, // relativePath -> sourceHash
 	operation: "create" | "retrofit",
-	force: boolean,
+	force: boolean
 ): FileChange[] {
 	const existingManifest = loadManifest(targetDir);
 	const changes: FileChange[] = [];
@@ -193,7 +193,7 @@ export function applyChanges(
 	sourceDir: string,
 	sourceFiles: Map<string, string>,
 	changes: FileChange[],
-	backup: boolean,
+	backup: boolean
 ): {
 	created: string[];
 	updated: string[];
@@ -207,9 +207,7 @@ export function applyChanges(
 	const conflicts: string[] = [];
 
 	// Determine which files will be overwritten (for backup)
-	const filesToBackup = changes
-		.filter((c) => c.action === "updated")
-		.map((c) => c.relativePath);
+	const filesToBackup = changes.filter((c) => c.action === "updated").map((c) => c.relativePath);
 
 	let backupDir: string | null = null;
 	if (backup && filesToBackup.length > 0) {
@@ -251,7 +249,7 @@ export function applyChanges(
 export function buildManifest(
 	sourceFiles: Map<string, string>,
 	version: string,
-	operation: "create" | "retrofit",
+	operation: "create" | "retrofit"
 ): ToolkitManifest {
 	const files: ManifestEntry[] = [];
 	for (const [relativePath, hash] of sourceFiles) {

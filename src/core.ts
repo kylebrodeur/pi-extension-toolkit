@@ -2,6 +2,7 @@ import { spawn } from "node:child_process";
 import { existsSync, readFileSync } from "node:fs";
 import * as fsp from "node:fs/promises";
 import * as path from "node:path";
+import type { DryRunResult, ToolkitOptions, ToolkitResult } from "./lib/types.js";
 import {
 	applyChanges,
 	buildManifest,
@@ -11,7 +12,6 @@ import {
 	saveManifest,
 	walkDir,
 } from "./lib/updater.js";
-import type { DryRunResult, ToolkitOptions, ToolkitResult } from "./lib/types.js";
 
 /**
  * Execute a command with AbortSignal support. Kills the process on abort.
@@ -19,7 +19,7 @@ import type { DryRunResult, ToolkitOptions, ToolkitResult } from "./lib/types.js
 function execWithSignal(
 	command: string,
 	args: string[],
-	options: { cwd?: string; signal?: AbortSignal },
+	options: { cwd?: string; signal?: AbortSignal }
 ): Promise<{ stdout: string; stderr: string; code: number | null; killed: boolean }> {
 	return new Promise((resolve, reject) => {
 		const child = spawn(command, args, {
@@ -69,7 +69,7 @@ function execWithSignal(
 function getPackageVersion(): string {
 	try {
 		const pkg = JSON.parse(
-			readFileSync(path.resolve(import.meta.dirname, "..", "package.json"), "utf-8"),
+			readFileSync(path.resolve(import.meta.dirname, "..", "package.json"), "utf-8")
 		);
 		return pkg.version;
 	} catch {
@@ -96,10 +96,18 @@ export interface CreateExtensionOptions extends ToolkitOptions {
  */
 export async function createExtension(
 	templateDir: string,
-	options: CreateExtensionOptions,
+	options: CreateExtensionOptions
 ): Promise<ToolkitResult> {
 	const startTime = Date.now();
-	const { name, targetDir, signal, onUpdate, force = false, backup = true, dryRun = false } = options;
+	const {
+		name,
+		targetDir,
+		signal,
+		onUpdate,
+		force = false,
+		backup = true,
+		dryRun = false,
+	} = options;
 
 	if (signal?.aborted) throw new Error("Operation cancelled");
 
@@ -113,7 +121,9 @@ export async function createExtension(
 		await fsp.access(absoluteTarget);
 		const files = await fsp.readdir(absoluteTarget);
 		if (!isUpdate && files.length > 0) {
-			throw new Error(`Target directory ${absoluteTarget} is not empty. Use force:true to overwrite.`);
+			throw new Error(
+				`Target directory ${absoluteTarget} is not empty. Use force:true to overwrite.`
+			);
 		}
 	} catch (e) {
 		if ((e as NodeJS.ErrnoException).code === "ENOENT") {
@@ -140,7 +150,8 @@ export async function createExtension(
 			const entries = await fsp.readdir(src, { withFileTypes: true });
 			for (const entry of entries) {
 				if (signal?.aborted) throw new Error("Operation cancelled");
-				if (entry.name === "node_modules" || entry.name === "dist" || entry.name === ".git") continue;
+				if (entry.name === "node_modules" || entry.name === "dist" || entry.name === ".git")
+					continue;
 
 				const srcPath = path.join(src, entry.name);
 				const destPath = path.join(dest, entry.name);

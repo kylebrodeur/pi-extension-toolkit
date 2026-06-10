@@ -6,8 +6,7 @@
  */
 import * as path from "node:path";
 import { createExtension } from "./core.js";
-import { retrofitExtension } from "./retrofit.js";
-import { verifyStandards } from "./verify.js";
+import type { DryRunResult, ToolkitOptions, ToolkitResult, VerifyResult } from "./lib/types.js";
 import {
 	computeChanges,
 	getInstalledVersion,
@@ -16,12 +15,8 @@ import {
 	loadManifest,
 	walkDir,
 } from "./lib/updater.js";
-import type {
-	DryRunResult,
-	ToolkitOptions,
-	ToolkitResult,
-	VerifyResult,
-} from "./lib/types.js";
+import { retrofitExtension } from "./retrofit.js";
+import { verifyStandards } from "./verify.js";
 
 export type {
 	DryRunResult,
