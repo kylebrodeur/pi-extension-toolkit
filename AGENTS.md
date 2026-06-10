@@ -2,7 +2,7 @@
 change_log:
   - timestamp: 2026-06-09T22:00:00Z
     agent_id: "pi-agent"
-    note: "Initial creation of AGENTS.md for pi-extension-toolkit, outlining project architecture, conventions, and agent operating guidelines."
+    note: "Initial creation of AGENTS.md for pi-extension-toolkit. Added AGENTS.template.md to template/ for scaffolded projects. Added RELEASE_NOTES.md for v0.3.0."
 ---
 # Agent Operating Guidelines for pi-extension-toolkit
 
