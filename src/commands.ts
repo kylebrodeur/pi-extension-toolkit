@@ -3,8 +3,27 @@ import type { ExtensionAPI, ExtensionCommandContext } from "@earendil-works/pi-c
 import { createExtension } from "./core.js";
 import { retrofitExtension } from "./retrofit.js";
 import { verifyStandards } from "./verify.js";
+import type { ToolkitResult } from "./lib/types.js";
 
 const TEMPLATE_DIR = path.resolve(import.meta.dirname, "..", "template");
+
+function formatCreateSummary(result: ToolkitResult): string {
+	const verb = result.isUpdate ? "Updated" : "Created";
+	let summary = `${verb} extension: ${result.filesCreated.length} files created`;
+	if (result.filesUpdated.length > 0) summary += `, ${result.filesUpdated.length} updated`;
+	if (result.filesSkipped.length > 0) summary += `, ${result.filesSkipped.length} preserved`;
+	if (result.conflicts.length > 0) summary += `, ⚠ ${result.conflicts.length} conflicts`;
+	return summary;
+}
+
+function formatRetrofitSummary(result: ToolkitResult): string {
+	if (result.filesCreated.length === 0 && result.filesUpdated.length === 0) {
+		return "No changes needed.";
+	}
+	let summary = `Retrofit: ${result.filesUpdated.length} files updated`;
+	if (result.filesCreated.length > 0) summary += `, ${result.filesCreated.length} created`;
+	return summary;
+}
 
 export function registerCommands(api: ExtensionAPI) {
 	api.registerCommand("create-extension", {
@@ -17,11 +36,18 @@ export function registerCommands(api: ExtensionAPI) {
 			if (!targetDir) return;
 
 			try {
-				ctx.ui.notify(`Creating extension ${name} in ${targetDir}...`, "info");
-				const result = await createExtension(name, targetDir, TEMPLATE_DIR);
-				ctx.ui.notify(result, "info");
+				ctx.ui.setStatus("toolkit-create", `Creating ${name}...`);
+				const result = await createExtension(TEMPLATE_DIR, {
+					name,
+					targetDir,
+					force: false,
+					backup: true,
+				});
+				ctx.ui.notify(formatCreateSummary(result), "info");
+				ctx.ui.setStatus("toolkit-create", undefined);
 			} catch (e) {
 				ctx.ui.notify(`Failed: ${(e as Error).message}`, "error");
+				ctx.ui.setStatus("toolkit-create", undefined);
 			}
 		},
 	});
@@ -33,11 +59,17 @@ export function registerCommands(api: ExtensionAPI) {
 			if (!targetDir) return;
 
 			try {
-				ctx.ui.notify(`Retrofitting extension in ${targetDir}...`, "info");
-				const result = await retrofitExtension(targetDir);
-				ctx.ui.notify(result, "info");
+				ctx.ui.setStatus("toolkit-retrofit", `Retrofitting ${targetDir}...`);
+				const result = await retrofitExtension({
+					targetDir,
+					force: false,
+					backup: true,
+				});
+				ctx.ui.notify(formatRetrofitSummary(result), "info");
+				ctx.ui.setStatus("toolkit-retrofit", undefined);
 			} catch (e) {
 				ctx.ui.notify(`Failed: ${(e as Error).message}`, "error");
+				ctx.ui.setStatus("toolkit-retrofit", undefined);
 			}
 		},
 	});

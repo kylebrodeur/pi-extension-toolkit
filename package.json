@@ -1,6 +1,6 @@
 {
   "name": "pi-extension-toolkit",
-  "version": "0.2.4",
+  "version": "0.3.0",
   "description": "A Pi Coding Agent extension to create, retrofit, and verify other extensions.",
   "author": "Kyle Brodeur",
   "license": "MIT",
@@ -28,6 +28,11 @@
       "import": "./dist/index.js",
       "require": "./dist/index.js",
       "types": "./dist/index.d.ts"
+    },
+    "./api": {
+      "import": "./dist/api.js",
+      "require": "./dist/api.js",
+      "types": "./dist/api.d.ts"
     }
   },
   "files": [
@@ -45,7 +50,9 @@
     "prepare": "husky",
     "check": "biome check --write . && tsc --noEmit",
     "build": "tsc",
-    "dev": "tsc --watch"
+    "dev": "tsc --watch",
+    "test": "node test.js",
+    "prepublishOnly": "npm run build && npm run check && node test.js"
   },
   "peerDependencies": {
     "@earendil-works/pi-coding-agent": ">=0.78.1 <1.0.0"
