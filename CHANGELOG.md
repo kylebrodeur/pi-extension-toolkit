@@ -1,13 +1,13 @@
 ## [0.3.0] - 2026-06-09
 
-- **Safe upgrades:** Added manifest-based tracking (`.pi-extension-toolkit-manifest.json`) with SHA-256 hashes. Re-running `create_extension` or `retrofit_extension` now detects user modifications and safely skips them. Conflicts are reported with clear remediation instructions.
-- **Dry-run support:** Both `create_extension` and `retrofit_extension` now accept `dryRun:true` to preview changes before executing.
-- **Structured results:** All operations return typed result objects (`ToolkitResult`, `VerifyResult`, `DryRunResult`) with file lists, conflict info, and duration tracking.
-- **Programmatic API:** New `api.ts` export (`import { createExtensionApi, retrofitApi, verifyApi } from 'pi-extension-toolkit/api'`) with typed interfaces for direct use by agents and scripts.
-- **Backup on overwrite:** Files modified during updates are backed up to `.pi-toolkit-backup-{timestamp}` before overwriting.
-- **Semantic exit codes:** Added `ExitCode` utility with codes 0-8 and 130 for programmatic error detection.
-- **Footer status:** Commands now use `ctx.ui.setStatus` for real-time progress in the Pi TUI footer.
-- **prepublishOnly:** Added safety script that runs build + check + tests before publish.
+- **Subcommand refactor:** Commands consolidated under `/ext-toolkit <create|retrofit|verify>` with tab-completion via `getArgumentCompletions`.
+- **Rule-based linter:** `verifyStandards` refactored to 22 named rules with `error`/`warning` severity. Adding new rules is a single-line addition. Structured API via `verifyRules()` returns `{ passed, errors[], warnings[] }`.
+- **Source code conventions:** Linter now checks for proper command naming (kebab-case prefix), `getArgumentCompletions` presence, and export patterns.
+- **Safe upgrades:** Added manifest-based tracking (`.pi-extension-toolkit-manifest.json`) with SHA-256 hashes. Re-running operations detects and preserves user modifications.
+- **Dry-run support:** Both `create_extension` and `retrofit_extension` accept `dryRun:true` to preview changes.
+- **Structured results:** All operations return typed result objects (`ToolkitResult`, `VerifyResult`, `DryRunResult`).
+- **Programmatic API:** New `api.ts` export with typed interfaces for `createExtensionApi`, `retrofitApi`, `verifyApi`, `verifyRules`.
+- **Backup + exit codes + prepublishOnly:** Backup on overwrite, semantic exit codes, and CI safety gate.
 
 ## [0.2.4] - 2026-06-09
 

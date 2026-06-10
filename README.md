@@ -2,32 +2,46 @@
 
 A specialized Pi Coding Agent extension designed to scaffold, retrofit, and verify other Pi extensions according to the `pi-extension-template` standards.
 
-## Features
-
-- **Create**: Scaffold a brand new extension using the official template (Node 22, TypeBox, Biome, Husky v9).
-- **Retrofit**: Automatically upgrade an existing extension to meet current standards. Fixes `biome.json` schemas, updates `.github/workflows` to Node 22, configures Husky v9, and adds the required `pi` manifest fields to `package.json`.
-- **Verify**: A comprehensive linter that audits your extension structure to ensure 100% compliance with Pi extension best practices.
-
 ## Installation
 
-\`\`\`bash
+```bash
 pi install npm:pi-extension-toolkit
-\`\`\`
+```
 
-## Usage
+## Commands
 
-Once installed, the toolkit provides both interactive UI commands and programmatic tools for the agent.
+`/ext-toolkit` — Tab-completable subcommand dispatch:
 
-### Commands (Interactive)
-- `/create-extension` - Prompts for a name and target directory, then scaffolds the template.
-- `/retrofit-extension` - Prompts for a target directory, then applies automated fixes.
-- `/verify-standards` - Audits the target directory and reports any missing standards.
+| Subcommand | Description |
+|-----------|-------------|
+| `create` | Scaffold a new extension from the standard template |
+| `retrofit` | Upgrade an existing extension to current standards |
+| `verify` | Run the rule-based linter against a target directory |
 
-### Agent Tools
-Your agent can autonomously call:
-- `create_extension(name, targetDir)`
-- `retrofit_extension(targetDir)`
-- `verify_standards(targetDir)`
+## Features
+
+- **Safe upgrades**: Manifest-based tracking (`.pi-extension-toolkit-manifest.json`) with SHA-256 hashes. Re-running operations detects and preserves user modifications. Conflicts are reported with remediation instructions.
+- **Dry-run preview**: Both create and retrofit accept `dryRun:true` to preview changes before applying.
+- **Rule-based linter**: 22 named rules organized by category (`package-json`, `config-files`, `tooling`, `ci-cd`, `source-code`). Adding a rule is a one-line addition to the `RULES` array.
+- **Structured results**: All operations return typed result objects with file lists, conflict info, and duration tracking.
+- **Programmatic API**: Import `createExtensionApi`, `retrofitApi`, `verifyApi`, `verifyRules` from `pi-extension-toolkit/api`.
+- **Backup + safety**: Automatic backups before overwrites, semantic exit codes, and `prepublishOnly` CI gate.
+
+## Agent Tools
+
+```typescript
+// Scaffold or safely update
+create_extension(name, targetDir, { dryRun?, force? })
+
+// Upgrade to current standards
+retrofit_extension(targetDir, { dryRun?, force? })
+
+// Run the rule-based linter
+verify_standards(targetDir)
+
+// Programmatic import
+import { createExtensionApi, retrofitApi, verifyApi, verifyRules } from 'pi-extension-toolkit/api';
+```
 
 ## Standards Enforced
 
