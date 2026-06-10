@@ -2,11 +2,11 @@
  * Programmatic API for pi-extension-toolkit.
  *
  * Can be imported directly by agents/scripts:
- *   import { createExtensionApi, retrofitApi, verifyApi } from 'pi-extension-toolkit/api';
+ *   import { createExtensionApi, retrofitApi, verifyApi, verifyRules } from 'pi-extension-toolkit/api';
  */
 import * as path from "node:path";
 import { createExtension } from "./core.js";
-import type { DryRunResult, ToolkitOptions, ToolkitResult, VerifyResult } from "./lib/types.js";
+import type { DryRunResult, ToolkitOptions, ToolkitResult } from "./lib/types.js";
 import {
 	computeChanges,
 	getInstalledVersion,
@@ -16,7 +16,7 @@ import {
 	walkDir,
 } from "./lib/updater.js";
 import { retrofitExtension } from "./retrofit.js";
-import { verifyStandards } from "./verify.js";
+import { type VerifyResult, formatText, verifyRules } from "./verify.js";
 
 export type {
 	DryRunResult,
@@ -25,8 +25,9 @@ export type {
 	ToolkitManifest,
 	ToolkitOptions,
 	ToolkitResult,
-	VerifyResult,
 } from "./lib/types.js";
+
+export type { VerifyResult } from "./verify.js";
 
 export {
 	computeChanges,
@@ -36,6 +37,8 @@ export {
 	loadManifest,
 	walkDir,
 } from "./lib/updater.js";
+
+export { formatText, verifyRules } from "./verify.js";
 
 const TEMPLATE_DIR = path.resolve(import.meta.dirname, "..", "template");
 
@@ -122,31 +125,27 @@ export async function retrofitApi(options: RetrofitApiOptions): Promise<ToolkitR
  * Verify a Pi extension against template standards.
  *
  * @param targetDir - Directory of the extension to verify
- * @returns Structured result with pass/fail status and issue list
+ * @returns Structured result with errors and warnings grouped by severity
  *
  * @example
  * ```typescript
- * import { verifyApi } from 'pi-extension-toolkit/api';
+ * import { verifyApi, verifyRules } from 'pi-extension-toolkit/api';
+ *
+ * // Structured result
  * const result = await verifyApi('./my-extension');
  * if (result.passed) {
  *   console.log('All checks passed!');
  * } else {
- *   for (const issue of result.issues) console.warn(issue);
+ *   for (const issue of result.errors) console.error(issue.message);
+ *   for (const issue of result.warnings) console.warn(issue.message);
  * }
+ *
+ * // Or get the raw rules for custom display
+ * const rules = await verifyRules('./my-extension');
  * ```
  */
 export async function verifyApi(targetDir: string): Promise<VerifyResult> {
-	const startTime = Date.now();
-	const output = await verifyStandards(targetDir);
-	const passed = output.includes("✅");
-	const issues = passed ? [] : output.split("\n").filter((l) => l.trim().length > 0);
-
-	return {
-		targetDir: path.resolve(targetDir),
-		passed,
-		issues,
-		durationMs: Date.now() - startTime,
-	};
+	return verifyRules(targetDir);
 }
 
 /**
@@ -168,7 +167,7 @@ export async function checkStatus(targetDir: string): Promise<{
 	return {
 		installed,
 		version,
-		hasConflicts: false, // Requires running computeChanges which needs source files
+		hasConflicts: false,
 		lastOperation: manifest?.operation ?? null,
 	};
 }
